@@ -3,7 +3,7 @@ from app import device, load_demo_image
 from app.utils import load_model_cache
 from lavis.processors import load_processor
 from PIL import Image
-from text_safety_checker import handle_text
+from app.text_safety_checker import handle_text
 
 import random
 import numpy as np

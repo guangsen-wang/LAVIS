@@ -7,7 +7,7 @@ from lavis.models.blip_models.blip_image_text_matching import BlipITM
 from lavis.processors import load_processor
 from lavis.processors.blip_processors import BlipCaptionProcessor
 from PIL import Image
-from text_safety_checker import handle_text
+from app.text_safety_checker import handle_text
 
 from app import device, load_demo_image
 from lavis.processors.clip_processors import ClipImageEvalProcessor

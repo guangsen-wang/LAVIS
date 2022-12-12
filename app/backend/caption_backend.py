@@ -2,7 +2,7 @@ from app import device
 from app.utils import load_model_cache, get_pending_jobs, create_uniq_user_job_name
 from app import job_output_path, finished_job_path
 from lavis.processors import load_processor
-from text_safety_checker import handle_text
+from app.text_safety_checker import handle_text
 
 import random
 import numpy as np

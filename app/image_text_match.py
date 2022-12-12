@@ -10,7 +10,7 @@ from app.utils import (
 from lavis.processors import load_processor
 from PIL import Image
 from lavis.models.blip_models.blip_image_text_matching import compute_gradcam
-from text_safety_checker import handle_text
+from app.text_safety_checker import handle_text
 
 def app():
     model_type = st.sidebar.selectbox("Model:", ["BLIP_large", "BLIP_base"])

@@ -15,7 +15,7 @@ from PIL import Image
 
 from app import device, load_demo_image
 from app.utils import getAttMap, init_bert_tokenizer, load_blip_itm_model
-from text_safety_checker import handle_text
+from app.text_safety_checker import handle_text
 
 
 def app():
