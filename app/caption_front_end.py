@@ -11,6 +11,7 @@ import torch
 
 job_type = 'caption'
 
+
 def setup_seeds(seed):
     random.seed(seed)
     np.random.seed(int(seed))
@@ -30,11 +31,12 @@ def app():
         "Sampling method:", ["Beam search", "Nucleus sampling"]
     )
     num_captions = 1
+    random_seed = 42
     if sampling_method == "Nucleus sampling":
         random_seed = st.sidebar.text_input("Seed:", 1024, help="Set random seed to reproduce the image description")
         setup_seeds(random_seed)
         num_captions = st.sidebar.slider("Choose number of captions to generate",
-                                    min_value=1, max_value=5, step=1)
+                                         min_value=1, max_value=5, step=1)
 
     st.markdown(
         "<h1 style='text-align: center;'>Image Description Generation</h1>",
@@ -65,7 +67,7 @@ def app():
     img = vis_processor(raw_img).unsqueeze(0)
 
     col2.header("Description")
-    #with col2:
+    # with col2:
     cap_button = st.button("Generate")
     blip_type = model_type.split("_")[1].lower()
 
@@ -73,20 +75,20 @@ def app():
         time_stamp = time.time()
         pending_jobs = os.path.join(pending_job_path, job_type)
         if not os.path.exists(pending_jobs):
-            #os.makedirs(pending_jobs)
+            # os.makedirs(pending_jobs)
             subprocess.run(['mkdir', '-p', pending_jobs], shell=False)
         file_name = '{}_result.txt'.format(create_uniq_user_job_name(time_stamp, sampling_method))
-        with open(os.path.join(pending_jobs, file_name),'w') as new_job:
-            line = str(time_stamp)+'\t'+blip_type+'\t'+str(sampling_method)+'\t'+str(num_captions)
-            new_job.write(line+'\n')
+        with open(os.path.join(pending_jobs, file_name), 'w') as new_job:
+            line = str(time_stamp) + '\t' + blip_type + '\t' + str(sampling_method) + '\t' + str(num_captions) + '\t' + str(random_seed)
+            new_job.write(line + '\n')
             new_job.close()
 
         num_pending_jobs = len(os.listdir(pending_jobs))
-        outpath = os.path.join(job_output_path,job_type)
+        outpath = os.path.join(job_output_path, job_type)
         if not os.path.exists(outpath):
             subprocess.run(['mkdir', '-p', outpath], shell=False)
-        search_result = outpath+'/{}_result.txt'.format(create_uniq_user_job_name(time_stamp, sampling_method))
-        torch.save(img, outpath+'/{}_raw_image.pt'.format(create_uniq_user_job_name(time_stamp, sampling_method)))
+        search_result = outpath + '/{}_result.txt'.format(create_uniq_user_job_name(time_stamp, sampling_method))
+        torch.save(img, outpath + '/{}_raw_image.pt'.format(create_uniq_user_job_name(time_stamp, sampling_method)))
 
         with st.spinner("Queuing (#{} in line)".format(num_pending_jobs)):
             while True:
@@ -95,11 +97,12 @@ def app():
                     with open(search_result) as f:
                         count = 0
                         with col2:
-                            #st.header("Description")
+                            # st.header("Description")
                             for caption in f:
                                 caption = caption.rstrip(' \n')
                                 if count < num_captions:
-                                    caption_md = '<p style="font-family:sans-serif; color:Black; font-size: 25px;">{}</p>'.format(caption)
+                                    caption_md = '<p style="font-family:sans-serif; color:Black; font-size: 25px;">{}</p>'.format(
+                                        caption)
                                     st.markdown(caption_md, unsafe_allow_html=True)
                                     count += 1
                     break

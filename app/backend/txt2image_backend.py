@@ -1,4 +1,4 @@
-import  os, shutil, subprocess
+import os, shutil, subprocess
 import torch
 import numpy as np
 from omegaconf import OmegaConf
@@ -17,6 +17,7 @@ from ldm.models.diffusion.plms import PLMSSampler
 from diffusers.pipelines.stable_diffusion.safety_checker import StableDiffusionSafetyChecker
 from transformers import AutoFeatureExtractor
 
+
 from app.utils import (
     get_pending_jobs,
     create_uniq_user_job_name
@@ -30,7 +31,6 @@ if torch.cuda.is_available():
     device = "cuda"
 else:
     device = "cpu"
-
 
 # load safety model
 safety_model_id = "CompVis/stable-diffusion-safety-checker"
@@ -54,8 +54,9 @@ def numpy_to_pil(images):
 
     return pil_images
 
+
 def load_model_from_config(config, ckpt, verbose=False):
-    #print(f"Loading model from {ckpt}")
+    # print(f"Loading model from {ckpt}")
     pl_sd = torch.load(ckpt, map_location="cpu")
     sd = pl_sd["state_dict"]
     model = instantiate_from_config(config.model)
@@ -84,7 +85,7 @@ def load_replacement(x):
     try:
         hwc = x.shape
         y = Image.open("assets/rick.jpeg").convert("RGB").resize((hwc[1], hwc[0]))
-        y = (np.array(y)/255.0).astype(x.dtype)
+        y = (np.array(y) / 255.0).astype(x.dtype)
         assert y.shape == x.shape
         return y
     except Exception:
@@ -100,20 +101,20 @@ def check_safety(x_image):
             x_checked_image[i] = load_replacement(x_checked_image[i])
     return x_checked_image, has_nsfw_concept
 
+
 def back_end():
     config = 'stable-diffusion/configs/stable-diffusion/v1-inference.yaml'
     ckpt = 'stable-diffusion/sd-v1-4.ckpt'
     config = OmegaConf.load(f"{config}")
     model = load_model_from_config(config, f"{ckpt}")
-    print(device)
     model = model.to(device)
     outpath = os.path.join(job_output_path, job_type)
     sample_path = os.path.join(outpath, "samples")
     if not os.path.exists(sample_path):
         subprocess.run(['mkdir', '-p', sample_path], shell=False)
-    finished_path = os.path.join(finished_job_path,job_type)
+    finished_path = os.path.join(finished_job_path, job_type)
     if not os.path.exists(finished_path):
-        subprocess.run(['mkdir', '-p',finished_path], shell=False)
+        subprocess.run(['mkdir', '-p', finished_path], shell=False)
     while True:
         pending_jobs = get_pending_jobs(job_type)
         for job in pending_jobs:
@@ -142,7 +143,7 @@ def generate_image(model, random_seed, time_stamp, user_prompt, num_images, samp
     sampler = PLMSSampler(model)
     with torch.no_grad():
         with precision_scope(device):
-        #with precision_scope("cuda"):
+            # with precision_scope("cuda"):
             with model.ema_scope():
                 tic = time.time()
                 all_samples = list()
@@ -156,14 +157,14 @@ def generate_image(model, random_seed, time_stamp, user_prompt, num_images, samp
                         c = model.get_learned_conditioning(prompts)
                         shape = [num_latent_channels, H // down_sample_factor, W // down_sample_factor]
                         samples_ddim, _ = sampler.sample(S=ddim_steps,
-                                                            conditioning=c,
-                                                            batch_size= num_images,
-                                                            shape=shape,
-                                                            verbose=False,
-                                                            unconditional_guidance_scale=scale,
-                                                            unconditional_conditioning=uc,
-                                                            eta=0.0,
-                                                            x_T=None)
+                                                         conditioning=c,
+                                                         batch_size=num_images,
+                                                         shape=shape,
+                                                         verbose=False,
+                                                         unconditional_guidance_scale=scale,
+                                                         unconditional_conditioning=uc,
+                                                         eta=0.0,
+                                                         x_T=None)
 
                         x_samples_ddim = model.decode_first_stage(samples_ddim)
                         x_samples_ddim = torch.clamp((x_samples_ddim + 1.0) / 2.0, min=0.0, max=1.0)
@@ -178,22 +179,26 @@ def generate_image(model, random_seed, time_stamp, user_prompt, num_images, samp
                             for x_sample in x_checked_image_torch:
                                 x_sample = 255. * rearrange(x_sample.cpu().numpy(), 'c h w -> h w c')
                                 img = Image.fromarray(x_sample.astype(np.uint8))
-                                #img = put_watermark(img, wm_encoder)
-                                img.save(os.path.join(sample_path, "{}_{}.png".format(create_uniq_user_job_name(str(time_stamp), user_prompt), count)))
+                                # img = put_watermark(img, wm_encoder)
+                                img.save(os.path.join(sample_path, "{}_{}.png".format(
+                                    create_uniq_user_job_name(str(time_stamp), user_prompt), count)))
                                 count += 1
                         if not skip_grid:
                             all_samples.append(x_checked_image_torch)
 
                 if not skip_grid:
-                        # additionally, save as grid
+                    # additionally, save as grid
                     grid = torch.stack(all_samples, 0)
                     grid = rearrange(grid, 'n b c h w -> (n b) c h w')
                     grid = make_grid(grid, nrow=n_rows)
 
-                        # to image
+                    # to image
                     grid = 255. * rearrange(grid, 'c h w -> h w c').cpu().numpy()
                     img = Image.fromarray(grid.astype(np.uint8))
-                        #img = put_watermark(img, wm_encoder)
-                    img.save(os.path.join(sample_path, "{}_grid.png".format(create_uniq_user_job_name(str(time_stamp), user_prompt))))
+                    # img = put_watermark(img, wm_encoder)
+                    img.save(os.path.join(sample_path, "{}_grid.png".format(
+                        create_uniq_user_job_name(str(time_stamp), user_prompt))))
+
+
 if __name__ == '__main__':
     back_end()

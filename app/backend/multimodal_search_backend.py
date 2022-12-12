@@ -1,7 +1,6 @@
 import os, shutil
 
 import numpy as np
-import streamlit as st
 import torch
 import torch.nn.functional as F
 from app import cache_root, device, job_output_path, finished_job_path
@@ -112,8 +111,10 @@ def search(time_stamp, user_question, feature_extractor, vis_processor, raw_user
 
     itm_scores = torch.cat(itm_scores)[:, 1]
     torch.save(itm_scores, outpath+'/{}_itm.pt'.format(create_uniq_user_job_name(time_stamp,raw_user_question)))
-    np.save(outpath+'/{}_avg_gradcams.npy'.format(create_uniq_user_job_name(time_stamp,raw_user_question)), avg_gradcams, allow_pickle=True)
-    np.save(outpath+'/{}_all_raw_images.npy'.format(create_uniq_user_job_name(time_stamp,raw_user_question)),all_raw_images,allow_pickle=True)
+    np.save(outpath+'/{}_avg_gradcams.npy'.format(create_uniq_user_job_name(time_stamp,raw_user_question)),
+            avg_gradcams, allow_pickle=True)
+    np.save(outpath+'/{}_all_raw_images.npy'.format(create_uniq_user_job_name(time_stamp,raw_user_question)),
+            all_raw_images,allow_pickle=True)
 
     search_result = outpath+'/{}_result.txt'.format(create_uniq_user_job_name(time_stamp,raw_user_question))
     with open(search_result,'w') as f:
@@ -158,7 +159,7 @@ def compute_gradcam_batch(model, visual_input, text_input, tokenized_text, block
         block_num
     ].crossattention.self.save_attention = True
 
-    output = model(visual_input, text_input, match_head="itm")
+    output = model({"image": visual_input, "text_input": text_input}, match_head="itm")
     loss = output[:, 1].sum()
 
     model.zero_grad()

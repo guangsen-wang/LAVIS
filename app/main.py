@@ -1,6 +1,6 @@
 from app.multipage import MultiPage
 from app import vqa, caption
-#from app import caption_front_end as caption
+from app import caption_front_end as caption
 from app import image_text_match as itm
 from app import text_localization as tl
 #from app import multimodal_search as ms

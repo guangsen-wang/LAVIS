@@ -12,7 +12,7 @@ from app.utils import (
     read_img,
     resize_img,
 )
-from lavis.models import BlipFeatureExtractor, load_model
+from lavis.models import load_model
 from lavis.processors import load_processor
 
 

@@ -2,12 +2,12 @@ import plotly.graph_objects as go
 import requests
 import streamlit as st
 import torch
-from lavis.models import BlipFeatureExtractor, load_model
+from lavis.models import load_model
 from lavis.models.blip_models.blip_image_text_matching import BlipITM
 from lavis.processors import load_processor
 from lavis.processors.blip_processors import BlipCaptionProcessor
 from PIL import Image
-import numpy as np
+from text_safety_checker import handle_text
 
 from app import device, load_demo_image
 from lavis.processors.clip_processors import ClipImageEvalProcessor
@@ -114,7 +114,7 @@ def app():
             cls_2 = st.text_input("category 3", value="giraffe")
             cls_3 = st.text_input("category 4", value="fountain")
             cls_4 = st.text_input("category 5", value="marina bay")
-        cls_names = [cls_0, cls_1, cls_2, cls_3, cls_4 ]
+        cls_names = [handle_text(cls_0), handle_text(cls_1), handle_text(cls_2), handle_text(cls_3), handle_text(cls_4)]
         cls_names = [cls_nm for cls_nm in cls_names if len(cls_nm) > 0]
         st.session_state.cls_names = ','.join(cls_names)
 

@@ -4,10 +4,8 @@ import torch
 
 import os
 
-from lavis.common.registry import registry
 from lavis.processors import *
 from lavis.models import *
-from lavis.common.utils import build_default_model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

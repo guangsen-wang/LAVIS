@@ -3,6 +3,7 @@ from app import load_demo_image, device
 from app.utils import load_model_cache
 from lavis.processors import load_processor
 from PIL import Image
+from text_safety_checker import handle_text
 
 
 def app():
@@ -62,7 +63,8 @@ def app():
 
             with col2:
                 st.header("Answer")
-                for answer in answers: 
-                    answer_md = '<p style="font-family:sans-serif; color:Black; font-size: 25px;">{}</p>'.format(answer)
+                for answer in answers:
+                    checked_text = handle_text(answer)
+                    answer_md = '<p style="font-family:sans-serif; color:Black; font-size: 25px;">{}</p>'.format(checked_text)
                     st.markdown(answer_md, unsafe_allow_html=True)
             #col2.write("\n".join(answers), use_column_width=True)

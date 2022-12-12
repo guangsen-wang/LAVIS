@@ -15,6 +15,7 @@ from PIL import Image
 
 from app import device, load_demo_image
 from app.utils import getAttMap, init_bert_tokenizer, load_blip_itm_model
+from text_safety_checker import handle_text
 
 
 def app():
@@ -93,6 +94,7 @@ def app():
                     gradcam_img = next(gradcam_iter)
 
                     word = tokenizer.decode([token_id])
+                    word = handle_text(word)
                     gradcam_todraw = getAttMap(norm_img, gradcam_img, blur=True)
 
                     new_title = (
